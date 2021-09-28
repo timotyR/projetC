@@ -6,7 +6,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <curses.h>
+//#include <curses.h>
 
 #define TAILLE 190
 
