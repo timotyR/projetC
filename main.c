@@ -89,10 +89,10 @@ void affichage_vaisseau(char* nom_fic, int posx, int posy)
 	printf("\033[%d;%dH",posx,posy);
 	affich(nom_fic,posy);
 }
-void deplacement(int* posx, int* posy, int longueur_vaisseau, int largeur_vaisseau,int* posxM, int* posyM,char* etat)
+void deplacement(char c,int* posx, int* posy, int longueur_vaisseau, int largeur_vaisseau,int* posxM, int* posyM,char* etat)
 {
 	// int i;
-	char c=key_pressed();
+	//char c=key_pressed();
 	switch(c)
 	{
 		case 'z':
@@ -221,17 +221,18 @@ int main()
 		int posy=5;
 		int posx=5;
 		
+		char c;
 		int posxM=posx-1;
 		int posyM=(5/2)+posy;
 		char etat='I';
 		
 		affichage_vaisseau("vaisseau1.txt",posx,posy);
 		
-		while((key_pressed())!='x')
+		while((c=key_pressed())!='x')
 		{
 			timing = (timing+1)%vitesse;
 			
-			deplacement(&posx,&posy,3,5,&posxM,&posyM,&etat);
+			deplacement(c,&posx,&posy,3,5,&posxM,&posyM,&etat);
 			/*
 			if(timing==1000)
 			{
