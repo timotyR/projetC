@@ -6,7 +6,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <curses.h>
 
 #define TAILLE 190
 
@@ -26,6 +25,8 @@ typedef struct joueur
 	int posx;
 	int posy;
 	int vitesse;
+	int blindage;
+	int touches;
 	char skin[TAILLE];
 	char etat;
 	int timing;
@@ -38,11 +39,49 @@ typedef struct ennemi
 	int posx;
 	int posy;
 	int vitesse;
+	int blindage;
+	int touches;
 	char skin[TAILLE];
 	char etat;
 	int timing;
 	
 }ENNEMI;
+
+JOUEUR init_joueur(char* model)
+{
+	JOUEUR J;
+	J.posx = 30;
+	J.posy = 19;
+	J.vitesse = 5000;
+	strcpy(J.skin,model);
+	J.etat = 'I';
+	J.timing=0;
+	return J;
+}
+ENNEMI init_ennemi(char D,char* model,int x, int y)
+{
+	ENNEMI E;
+	E.posx = x;
+	E.posy = y;
+	E.direction = D;
+	E.vitesse = 5000;
+	strcpy(E.skin,model);
+	E.etat = 'I';
+	E.timing=0;
+	return E;
+}
+MISSILE init_missile(char D,char* model,int x, int y)
+{
+	MISSILE M;
+	M.posx = x;
+	M.posy = y;
+	M.direction = D;
+	M.vitesse = 5000;
+	strcpy(M.skin,model);
+	M.etat = 'V';
+	return M;
+}
+
 char key_pressed()
 {
 	struct termios oldterm, newterm;
@@ -84,6 +123,31 @@ void affich(char* nom_fic,int decalage)
 	}
 	printf("\n");
 }
+
+void chargement(char* nom_fic,int nb,int skin[nb])
+{
+	char str[2];
+	char c;
+	int i,j;
+	FILE* fic=fopen(nom_fic,"r");
+	while((c=fgetc(fic))!=EOF)
+	{
+		if(c!='\n')
+		{
+			if(c==' ')
+			{
+				skin[j]=atoi(str);
+				i=0;
+				j++;
+			}
+			else
+			{
+				str[i]=c;
+				i++;
+			}
+		}
+	}
+}
 void affichage_vaisseau(char* nom_fic, int posx, int posy)
 {
 	printf("\033[%d;%dH",posx,posy);
@@ -91,18 +155,9 @@ void affichage_vaisseau(char* nom_fic, int posx, int posy)
 }
 void deplacement(char c,int* posx, int* posy, int longueur_vaisseau, int largeur_vaisseau,int* posxM, int* posyM,char* etat)
 {
-	// int i;
-	//char c=key_pressed();
 	switch(c)
 	{
 		case 'z':
-			/*
-			for(i=0;i<largeur_vaisseau;i++)
-			{
-				printf("\033[%d;%dH ",*posx+longueur_vaisseau-2,*posy+i);
-			}
-			*/
-			
 			*posx=*posx-1;
 			system("clear");
 			if(*etat=='I')
@@ -123,12 +178,6 @@ void deplacement(char c,int* posx, int* posy, int longueur_vaisseau, int largeur
 			affichage_vaisseau("vaisseau1.txt",*posx-1,*posy);
 			break;
 		case 'd':
-			/*
-			for(i=0;i<longueur_vaisseau;i++)
-			{
-				printf("\033[%d;%dH ",*posx+i,*posy);
-			}
-			*/
 			*posy=*posy+1;
 			system("clear");
 			if(*etat=='I')
@@ -150,12 +199,6 @@ void deplacement(char c,int* posx, int* posy, int longueur_vaisseau, int largeur
 			affichage_vaisseau("vaisseau1.txt",*posx,*posy);
 			break;
 		case 's':
-			/*
-			for(i=0;i<largeur_vaisseau;i++)
-			{
-				printf("\033[%d;%dH ",*posx,*posy+i);
-			}
-			*/
 			*posx=*posx+1;
 			system("clear");
 			if(*etat=='I')
@@ -176,12 +219,6 @@ void deplacement(char c,int* posx, int* posy, int longueur_vaisseau, int largeur
 			affichage_vaisseau("vaisseau1.txt",*posx,*posy);
 			break;
 		case 'q':
-			/*
-			for(i=0;i<longueur_vaisseau;i++)
-			{
-				printf("\033[%d;%dH ",*posx+i,*posy+largeur_vaisseau-1);
-			}
-			*/
 			*posy=*posy-1;
 			system("clear");
 			if(*etat=='I')
@@ -233,26 +270,7 @@ int main()
 			timing = (timing+1)%vitesse;
 			
 			deplacement(c,&posx,&posy,3,5,&posxM,&posyM,&etat);
-			/*
-			if(timing==1000)
-			{
-				//posy++;
-				//posx++;
-				
-				//printf("\033[3m");
-				
-				
-				if(posy>1)
-				{
-					printf("\033[%d;%dH ",posx,posy-1);
-				}
-				if(posx>1)
-				{
-					printf("\033[%d;%dH      ",posx-1,posy-1);
-				}
-				//printf("\033[00m");
-			}
-			*/
+
 		}
 		
 		return 0;
