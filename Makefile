@@ -1,5 +1,8 @@
 CC=gcc
 CFLAGS=-Werror -Wall -Wextra
 
-main.c:
-	$(CC) $(CFLAGS)
+run:
+	./a.out
+
+compile:
+	$(CC) $(CFLAGS) ncurses.c -lncursesw
