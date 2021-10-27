@@ -17,6 +17,17 @@ typedef struct missile
 	
 }MISSILE;
 
+typedef struct etoile
+{
+	int posx;
+	int posy;
+	int vitesse;
+	char* skin;
+	char etat;
+	int timing;
+	
+}ETOILE;
+
 typedef struct joueur
 {
 	int posx;
