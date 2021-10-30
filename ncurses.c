@@ -18,7 +18,7 @@ int main(void)
 	// ENNEMI e1= init_ennemi('S',"vaisseauB2.txt",10,10,18,6);
 	// ENNEMI e2= init_ennemi('S',"vaisseauB.txt",10,15,18,6);
 	// ENNEMI e3= init_ennemi('S',"vaisseauB2.txt",10,20,18,6);
-	ENNEMI e3= init_ennemi('S',"vaisseauC.txt",10,20,21,7);
+	ENNEMI e3= init_ennemi('S',"vaisseauE.txt",10,20,21,7);
 	// MISSILE m1=init_missile('N',j1.posx-1-1,(j1.largeur/2)+j1.posy-2,'I');
 	MISSILE* tabM =tabMissile(nbMissile,j1);
 	ETOILE* tabEt =tabEtoile(nbEtoile);
@@ -120,7 +120,7 @@ int main(void)
 				if(tabM[j].posx==0)
 				{
 					tabM[j].etat='I';
-					mvprintw(tabM[j].posx,tabM[j].posy," ");
+					// mvprintw(tabM[j].posx,tabM[j].posy," ");
 				}
 			}
 		}

@@ -191,6 +191,7 @@ void printSkinCurse(char** skin, int length,int posx,int posy,int larg)
 	{
 		if(i%larg==0&&i!=0)
 		{
+			// printw("X");
 			posx++;
 			posy=posInit;
 			move(posx - 1, posy - 1);
@@ -247,10 +248,18 @@ void supprSkinCurse(int posx, int posy, char dir, int longueur,int largeur)
 int hitBox(ENNEMI E, MISSILE M)
 {
 	int longueur=E.length/E.largeur;
-	if((M.posx>=E.posx&&M.posx<=E.posx+E.largeur)&&(M.posy>=E.posy&&M.posy<=E.posy+longueur))
+	if((M.posx>=E.posx&&M.posx<=E.posx+longueur-2)&&(M.posy>=E.posy-1&&M.posy<=E.posy+E.largeur-3))
 	{
-		M.etat='I';
-		return E.touches-1;
+		return 1;
 	}
-	return E.touches;
+	return 0;
+}
+
+void affichage_Etoile(ETOILE* E,int length)
+{
+	int i;
+	for(i=0;i<length;i++)
+	{
+		mvprintw(E[i].posx,E[i].posy,"*");
+	}
 }
