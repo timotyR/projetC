@@ -84,7 +84,7 @@ char* printChar(int c)
 			return("\u2500");//─
 			break;
 		case 26:
-			return("\n");
+			return("");
 			break;
 		case 27:
 		    return("\u2510");//┐
@@ -185,13 +185,34 @@ void printSkin(char** skin, int length,int decalage,int larg)
 void printSkinCurse(char** skin, int length,int posx,int posy,int larg)
 {
 	int i;
+	int j=0;
+	int xLimit=5;
 	int posInit=posy;
+	int DecX = posx-xLimit;
 	move(posx - 1, posy - 1);
+	if(DecX<0)
+	{
+		for(i=0;i<length;i++)
+		{
+			if(i%larg==0&&i!=0)
+			{
+				posx++;
+				j++;
+				posy=posInit;
+				move(posx - 1, posy - 1);
+			}
+			if(j>=-DecX)
+			{
+				printw("%s",skin[i]);
+			}
+		}
+	}
+	else
+	{
 	for(i=0;i<length;i++)
 	{
 		if(i%larg==0&&i!=0)
 		{
-			// printw("X");
 			posx++;
 			posy=posInit;
 			move(posx - 1, posy - 1);
@@ -199,6 +220,7 @@ void printSkinCurse(char** skin, int length,int posx,int posy,int larg)
 		printw("%s",skin[i]);
 	}
 	posx++;
+	}
 }
 //supression des caracteres apres deplacement 
 void supprSkinCurse(int posx, int posy, char dir, int longueur,int largeur)

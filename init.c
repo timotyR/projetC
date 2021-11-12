@@ -48,7 +48,7 @@ MISSILE init_missile(char D,int x, int y,char etat)
 	M.posx = x;
 	M.posy = y;
 	M.direction = D;
-	M.vitesse = 6000;
+	M.vitesse = 1000;
 	M.skin="¤";
 	M.etat = etat;
 	M.timing=0;
@@ -60,7 +60,7 @@ ETOILE init_etoile()
 	ETOILE E;
 	E.posx = 1+(rand()%36);
 	E.posy = 1+(rand()%70);
-	E.vitesse = 8000;
+	E.vitesse = 1500;
 	E.skin="*";
 	E.etat = 'V';
 	E.timing=0;

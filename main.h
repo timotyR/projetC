@@ -66,6 +66,12 @@ typedef struct Liste
 	
 }Liste,*Ptliste;
 
+struct printedList {
+	void *data;
+	struct printedList *prev;
+	struct printedList *next;
+	
+};
 
 //fonction qui retourne un caractere ascii extended en fonction d'un entier
 char* printChar(int c);
