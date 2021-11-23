@@ -48,7 +48,7 @@ MISSILE init_missile(char D,int x, int y,char etat)
 	M.posx = x;
 	M.posy = y;
 	M.direction = D;
-	M.vitesse = 1000;
+	M.vitesse = 20000;
 	M.skin="¤";
 	M.etat = etat;
 	M.timing=0;
@@ -101,5 +101,33 @@ Ptliste initListe(ENNEMI X)
 	P->contenu=X;
 	P->next=NULL;
 	return P;
+}
+
+Ptliste insertentete(Ptliste L, ENNEMI X)
+{
+	Ptliste P=initListe(X);
+	if(L==NULL)
+	{
+		return P;
+	}
+	P->next=L;
+	return P;
+}
+
+Ptliste initEnnemiList1()
+{
+	int x =5;
+	int y =2;
+	int i;
+	Ptliste listEn = (Liste*)malloc(sizeof(Liste));
+	
+	for(i=0;i<4;i++)
+	{
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauD.txt",x,y+i*7,21,7));
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauE.txt",x+4,y+i*7,21,7));
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauC.txt",x+8,y+i*7,21,7));
+	}
+	
+	return listEn;
 }
 

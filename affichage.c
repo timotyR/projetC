@@ -285,3 +285,127 @@ void affichage_Etoile(ETOILE* E,int length)
 		mvprintw(E[i].posx,E[i].posy,"*");
 	}
 }
+
+void printList(Ptliste L)
+{
+	while(L->next!=NULL)
+	{
+		printSkinCurse(L->contenu.skin,L->contenu.length,L->contenu.posx,L->contenu.posy,L->contenu.largeur);
+		L=L->next;
+	}
+}
+char deplacementEnnemis(Ptliste init,char dir)
+{
+	Ptliste L=init;
+	// int xLimit1 =	5;
+	// int xLimit2 =	60;
+	int yLimit1 =	2;
+	int yLimit2 =	67;
+	int x	= 0;
+	int y	= 0;
+	int xMin=L->contenu.posx;
+	int xMax=L->contenu.posx;
+	int yMin=L->contenu.posy;
+	int yMax=L->contenu.posy;
+	
+	while(L->next!=NULL)
+	{
+		if(xMin>L->contenu.posx)
+		{
+			xMin=L->contenu.posx;
+		}
+		if(xMax<L->contenu.posx)
+		{
+			xMax=L->contenu.posx;
+		}
+		if(yMin>L->contenu.posy)
+		{
+			yMin=L->contenu.posy;
+		}
+		if(yMax<L->contenu.posy)
+		{
+			yMax=L->contenu.posy;
+		}
+		L=L->next;
+	}
+	if(dir=='E')
+	{
+		if(yMax<yLimit2)
+		{
+			y++;
+		}
+		else
+		{
+			x++;
+			dir = 'O';
+		}
+	}
+	if(dir=='O')
+	{
+		if(yMin<=yLimit1)
+		{
+			x++;
+			dir = 'E';
+		}
+		else
+		{
+			y--;
+		}
+	}
+	L=init;
+	while(L->next!=NULL)
+	{
+		L->contenu.posy+=y;
+		L->contenu.posx+=x;
+		L=L->next;
+	}
+	
+	
+	return dir;
+	
+}
+Ptliste supprElt(Ptliste init,int n,Ptliste next)
+{
+	Ptliste L=init;
+	
+	while(L->next!=NULL)
+	{
+		if(n<0)
+		{
+			free(L);
+			return init->next;
+		}
+		if(n==0)
+		{
+			L->next=next;
+			return init;
+		}
+		n--;
+		L=L->next;
+	}
+	return init;
+}
+Ptliste damage(Ptliste init,MISSILE* m1)
+{
+	Ptliste L=init;
+	int i=0;
+	while(L->next!=NULL)
+	{
+		if(hitBox(L->contenu,*m1))
+		{
+			if(L->contenu.blindage>0)
+			{
+				L->contenu.blindage--;
+				m1->etat='I';
+				return init;
+			}
+			else
+			{
+				return supprElt(init,i-1,L->next);
+			}
+		}
+		i++;
+		L=L->next;
+	}
+	return init;
+}
