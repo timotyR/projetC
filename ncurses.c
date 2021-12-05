@@ -18,7 +18,7 @@ int main(void)
 	init_pair(6,COLOR_MAGENTA,COLOR_BLACK);
 	
 	//DEFINITION DES VARIABLES
-	char c;
+	int c;
 	int timing			= 0;
 	int timingEnnemis	= 0;
 	int timingMissiles	= 0;
