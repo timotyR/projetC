@@ -4,28 +4,29 @@
 
 
 
-JOUEUR init_joueur()
+VAISSEAU init_joueur()
 {
-	JOUEUR J;
+	VAISSEAU J;
 	
 	J.length=40;
-	J.posx = 30;
-	J.posy = 19;
+	J.posx = 65;
+	J.posy = 55;
 	J.vitesse = 5000;
-	J.etat = 'I';
+	J.etat = 'V';
 	J.timing=0;
 	J.largeur=10;
+	J.blindage=3;
 	
-	int* vaisseauA=chargement("vaisseauA.txt",J.length);
-	J.skin=getSkin(vaisseauA,J.length);
+	J.skin=getSkin(chargement("vaisseauA.txt",J.length),J.length);
+	J.skin2=getSkin(chargement("vaisseauA2.txt",J.length),J.length);
+	J.skin3=getSkin(chargement("vaisseauA3.txt",J.length),J.length);
 	
-	free(vaisseauA);
 	return J;
 }
 
-ENNEMI init_ennemi(char D,char* nom_fic,int x, int y,int length,int largeur)
+VAISSEAU init_ennemi(char D,char* nom_fic,char* nom_fic2,char* nom_fic3,int x, int y,int length,int largeur,int pts,int blind)
 {
-	ENNEMI E;
+	VAISSEAU E;
 	E.length=length;
 	E.posx = x;
 	E.posy = y;
@@ -34,12 +35,13 @@ ENNEMI init_ennemi(char D,char* nom_fic,int x, int y,int length,int largeur)
 	E.etat = 'V';
 	E.timing=0;
 	E.largeur=largeur;
-	E.blindage=3;
+	E.blindage=blind;
+	E.points=pts;
 	
-	int* vaisseau=chargement(nom_fic,E.length);
-	E.skin=getSkin(vaisseau,E.length);
+	E.skin=getSkin(chargement(nom_fic,E.length),E.length);
+	E.skin2=getSkin(chargement(nom_fic2,E.length),E.length);
+	E.skin3=getSkin(chargement(nom_fic3,E.length),E.length);
 	
-	free(vaisseau);
 	return E;
 }
 MISSILE init_missile(char D,int x, int y,char etat)
@@ -49,6 +51,7 @@ MISSILE init_missile(char D,int x, int y,char etat)
 	M.posy = y;
 	M.direction = D;
 	M.vitesse = 20000;
+	// M.skin=printChar(33);
 	M.skin="¤";
 	M.etat = etat;
 	M.timing=0;
@@ -58,16 +61,15 @@ MISSILE init_missile(char D,int x, int y,char etat)
 ETOILE init_etoile()
 {
 	ETOILE E;
-	E.posx = 1+(rand()%36);
-	E.posy = 1+(rand()%70);
+	E.posx = 1+(rand()%70);
+	E.posy = 1+(rand()%120);
 	E.vitesse = 1500;
-	E.skin="*";
+	E.skin=printChar(34);
 	E.etat = 'V';
-	E.timing=0;
 	return E;
 }
 
-MISSILE* tabMissile(int length,JOUEUR j1)
+MISSILE* tabMissile(int length,VAISSEAU j1)
 {
 	MISSILE* M=malloc(length*sizeof(MISSILE));
 	int i;
@@ -87,14 +89,14 @@ ETOILE* tabEtoile(int length)
 		E[i]=init_etoile();
 		if(i>=length-35)
 		{
-			E[i].posx = -(1+(rand()%23));
+			E[i].posx = -(1+(rand()%83));
 			E[i].posy = 1+(rand()%70);
 		}
 	}
 	return E;
 }
 
-Ptliste initListe(ENNEMI X)
+Ptliste initListe(VAISSEAU X)
 {
 	
 	Ptliste P =(Liste*)malloc(sizeof(Liste));
@@ -103,7 +105,7 @@ Ptliste initListe(ENNEMI X)
 	return P;
 }
 
-Ptliste insertentete(Ptliste L, ENNEMI X)
+Ptliste insertentete(Ptliste L, VAISSEAU X)
 {
 	Ptliste P=initListe(X);
 	if(L==NULL)
@@ -116,18 +118,136 @@ Ptliste insertentete(Ptliste L, ENNEMI X)
 
 Ptliste initEnnemiList1()
 {
-	int x =5;
-	int y =2;
+	int x =-80;
+	int y =1+(rand()%120);
 	int i;
 	Ptliste listEn = (Liste*)malloc(sizeof(Liste));
 	
 	for(i=0;i<4;i++)
 	{
-		listEn=insertentete(listEn, init_ennemi('S',"vaisseauD.txt",x,y+i*7,21,7));
-		listEn=insertentete(listEn, init_ennemi('S',"vaisseauE.txt",x+4,y+i*7,21,7));
-		listEn=insertentete(listEn, init_ennemi('S',"vaisseauC.txt",x+8,y+i*7,21,7));
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauC.txt","vaisseauC2.txt","vaisseauC3.txt",x,y+22+i*7,21,7,60,5));
+		
 	}
-	
+	for(i=0;i<6;i++)
+	{
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauE.txt","vaisseauE2.txt","vaisseauE3.txt",x+4,y+14+i*7,21,7,45,4));
+	}
+	for(i=0;i<8;i++)
+	{
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauD.txt","vaisseauD2.txt","vaisseauD3.txt",x+8,y+8+i*7,21,7,30,3));
+	}
+	for(i=0;i<10;i++)
+	{
+		listEn=insertentete(listEn, init_ennemi('S',"vaisseauB.txt","vaisseauB2.txt","vaisseauB3.txt",x+12,y+1+i*7,18,6,10,3));
+	}
 	return listEn;
+}
+
+void freeList(Ptliste list)
+{
+   Ptliste tmp;
+
+   while (list != NULL)
+    {
+       tmp = list;
+       list = list->next;
+       free(tmp);
+    }
+
+}
+
+MISSILE* missile_ennemi(Ptliste init,MISSILE* M,int nbMissile)
+{
+	Ptliste L=init;
+	int listLen=0;
+	int j,k;
+	
+	while(L->next!=NULL)
+	{
+		listLen++;
+		L=L->next;
+	}
+	for(j=0;j<nbMissile;j++)
+	{
+		L=init;
+		k=0;
+		
+		if(M[j].etat!='V')
+		{
+			if(L->next==NULL)
+			{
+				M[j]=init_missile('S',L->contenu.posx+(L->contenu.length/L->contenu.largeur)-1,(L->contenu.largeur/2)+L->contenu.posy-2,'V');
+			}
+			else
+			{
+				while(L->next!=NULL)
+				{
+					if(k==1+(rand()%listLen))
+					{
+						M[j]=init_missile('S',L->contenu.posx+(L->contenu.length/L->contenu.largeur)-1,(L->contenu.largeur/2)+L->contenu.posy-2,'V');
+					}
+					k++;
+					L=L->next;
+				}
+			}
+		}
+	}
+	return M;
+}
+
+
+Ptliste damage(Ptliste init,MISSILE* m1,int* score)
+{
+	Ptliste L=init;
+	int i=0;
+
+	if(L->next==NULL)
+	{
+		if(L->contenu.blindage>0&&hitBox(L->contenu,*m1))
+		{
+			L->contenu.blindage--;
+			if(L->contenu.blindage==1)
+			{
+				L->contenu.skin=L->contenu.skin3;
+			}
+			else if(L->contenu.blindage==2)
+			{
+				L->contenu.skin=L->contenu.skin2;
+			}
+			m1->etat='I';
+			return init;
+		}
+		if(L->contenu.blindage<=0)
+		{
+			*score=*score+L->contenu.points;
+			free(L);
+			return NULL;
+		}
+	}
+	while(L->next!=NULL)
+	{
+		if(L->contenu.blindage>0&&hitBox(L->contenu,*m1))
+		{
+			L->contenu.blindage--;
+			m1->etat='I';
+			if(L->contenu.blindage==1)
+			{
+				L->contenu.skin=L->contenu.skin3;
+			}
+			else if(L->contenu.blindage==2)
+			{
+				L->contenu.skin=L->contenu.skin2;
+			}
+			return init;
+		}
+		if(L->contenu.blindage<=0)
+		{
+			*score=*score+L->contenu.points;
+			return supprElt(init,i-1,L->next);
+		}
+		i++;
+		L=L->next;
+	}
+	return init;
 }
 

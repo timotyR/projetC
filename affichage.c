@@ -1,4 +1,4 @@
-#include "main.h"
+#include "struct.h"
 
 //fonction qui retourne un caractere ascii extended en fonction d'un entier
 char* printChar(int c)
@@ -98,6 +98,18 @@ char* printChar(int c)
 		case 30:
 			return("\u2502");//│
 			break;
+		case 31:
+			return("\u2665");//♥
+			break;
+		case 32:
+			return("\U0001F525");//🔥
+			break;
+		case 33://MISSILE
+			return("\U00002B55");//⦷
+			break;
+		case 34://ETOILE
+			return("\U00002606");//☆
+			break;
 		default:
 			return("");
 	}
@@ -186,7 +198,7 @@ void printSkinCurse(char** skin, int length,int posx,int posy,int larg)
 {
 	int i;
 	int j=0;
-	int xLimit=5;
+	int xLimit=4;
 	int posInit=posy;
 	int DecX = posx-xLimit;
 	move(posx - 1, posy - 1);
@@ -266,13 +278,28 @@ void supprSkinCurse(int posx, int posy, char dir, int longueur,int largeur)
 	}
 	
 }
-
-int hitBox(ENNEMI E, MISSILE M)
+//COLLISION ENTRE VAISSEAU ET MISSILE
+int hitBox(VAISSEAU E, MISSILE M)
 {
 	int longueur=E.length/E.largeur;
 	if((M.posx>=E.posx&&M.posx<=E.posx+longueur-2)&&(M.posy>=E.posy-1&&M.posy<=E.posy+E.largeur-3))
 	{
 		return 1;
+	}
+	return 0;
+}
+
+//COLLISION ENTRE 2 MISSILE
+int collisionMissile(MISSILE M,MISSILE* tabM,int nbMissile)
+{
+	int i;
+	for(i=0;i<nbMissile;i++)
+	{
+		if(M.posx==tabM[i].posx&&M.posy==tabM[i].posy&&tabM[i].etat=='V')
+		{
+			tabM[i].etat='I';
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -288,19 +315,39 @@ void affichage_Etoile(ETOILE* E,int length)
 
 void printList(Ptliste L)
 {
+	//COULEURS
+	start_color();
+	init_pair(1,COLOR_GREEN,COLOR_BLACK);
+	init_pair(2,COLOR_BLUE,COLOR_BLACK);
+	init_pair(3,COLOR_RED,COLOR_BLACK);
+	init_pair(4,COLOR_YELLOW,COLOR_BLACK);
+	
+	//PARCOURS LISTE
 	while(L->next!=NULL)
 	{
+		//AFFICHAGE PAR COULEUR
+		if(L->contenu.points>45)
+			attron(COLOR_PAIR(1));
+		else if(L->contenu.points>30)
+			attron(COLOR_PAIR(2));
+		else if(L->contenu.points>10)
+			attron(COLOR_PAIR(3));
+		else
+			attron(COLOR_PAIR(4));
+		
 		printSkinCurse(L->contenu.skin,L->contenu.length,L->contenu.posx,L->contenu.posy,L->contenu.largeur);
 		L=L->next;
+		attroff(COLOR_PAIR(1));
+		attroff(COLOR_PAIR(2));
+		attroff(COLOR_PAIR(3));
+		attroff(COLOR_PAIR(4));
 	}
 }
 char deplacementEnnemis(Ptliste init,char dir)
 {
 	Ptliste L=init;
-	// int xLimit1 =	5;
-	// int xLimit2 =	60;
 	int yLimit1 =	2;
-	int yLimit2 =	67;
+	int yLimit2 =	120;
 	int x	= 0;
 	int y	= 0;
 	int xMin=L->contenu.posx;
@@ -308,6 +355,7 @@ char deplacementEnnemis(Ptliste init,char dir)
 	int yMin=L->contenu.posy;
 	int yMax=L->contenu.posy;
 	
+	//PARCOURS DE LISTE POUR XMAX XMIN YMAX YMIN
 	while(L->next!=NULL)
 	{
 		if(xMin>L->contenu.posx)
@@ -328,6 +376,12 @@ char deplacementEnnemis(Ptliste init,char dir)
 		}
 		L=L->next;
 	}
+	//SI POSITION DES ENNEMIS EST PAS VISIBLE SUR L'ECRAN
+	if(xMin<4)
+	{
+		x++;
+	}
+	//SI LES ENNEMIS VONT VERS LA DROITE
 	if(dir=='E')
 	{
 		if(yMax<yLimit2)
@@ -340,6 +394,7 @@ char deplacementEnnemis(Ptliste init,char dir)
 			dir = 'O';
 		}
 	}
+	//SI LES ENNEMIS VONT VERS LA GAUCHE
 	if(dir=='O')
 	{
 		if(yMin<=yLimit1)
@@ -353,6 +408,7 @@ char deplacementEnnemis(Ptliste init,char dir)
 		}
 	}
 	L=init;
+	//MAJ DES POSITION ENNEMIS
 	while(L->next!=NULL)
 	{
 		L->contenu.posy+=y;
@@ -364,6 +420,9 @@ char deplacementEnnemis(Ptliste init,char dir)
 	return dir;
 	
 }
+
+
+//SUPPRESSION ELEMENT DANS UNE LISTE 
 Ptliste supprElt(Ptliste init,int n,Ptliste next)
 {
 	Ptliste L=init;
@@ -377,6 +436,7 @@ Ptliste supprElt(Ptliste init,int n,Ptliste next)
 		}
 		if(n==0)
 		{
+			free(L->next);
 			L->next=next;
 			return init;
 		}
@@ -385,27 +445,156 @@ Ptliste supprElt(Ptliste init,int n,Ptliste next)
 	}
 	return init;
 }
-Ptliste damage(Ptliste init,MISSILE* m1)
+
+
+void affichage_score(int choixMode,int score, int vie,int bestScore)
 {
-	Ptliste L=init;
-	int i=0;
-	while(L->next!=NULL)
-	{
-		if(hitBox(L->contenu,*m1))
+		//Ligne 0 Mode
+		int i;
+		char* mode;
+		mvprintw(0,0,"%s",printChar(10));
+		for(i = 0;i<18;i++)
 		{
-			if(L->contenu.blindage>0)
-			{
-				L->contenu.blindage--;
-				m1->etat='I';
-				return init;
-			}
-			else
-			{
-				return supprElt(init,i-1,L->next);
-			}
+			printw("%s",printChar(29));
 		}
-		i++;
-		L=L->next;
-	}
-	return init;
+		printw("%s",printChar(5));
+		for(i = 0;i<18;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(11));
+		
+		//Ligne 1 MODE
+		if(choixMode==1)
+			mode="Facile";
+		else if(choixMode==2)
+			mode="Difficile";
+		else
+			mode="Progressif";
+		mvprintw(1,0,"%s",printChar(14));
+		printw("MODE : %s",mode);
+		mvprintw(1,19,"%s",printChar(14));
+		printw("VIE : ");
+		for(i=0;i<vie;i++)
+		{
+			printw("%s ",printChar(31));
+		}
+		mvprintw(1,38,"%s",printChar(14));
+		
+		//Ligne 2 MODE
+		mvprintw(2,0,"%s",printChar(15));
+		for(i = 0;i<18;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(6));
+		for(i = 0;i<18;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(16));
+		
+		//Ligne 0 Score
+		mvprintw(0,70,"%s",printChar(10));
+		for(i = 0;i<25;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(5));
+		for(i = 0;i<30;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(11));
+		
+		//Ligne 1 Score
+		mvprintw(1,70,"%s",printChar(14));
+		printw("Score : %d",score);
+		mvprintw(1,96,"%s",printChar(14));
+		printw("Meilleur Score : %d",bestScore);
+		mvprintw(1,127,"%s",printChar(14));
+		
+		//Ligne 2 Score
+		mvprintw(2,70,"%s",printChar(15));
+		for(i = 0;i<25;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(6));
+		for(i = 0;i<30;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(16));
+	
+}
+
+void affich_GameOver(int bestScore,int score)
+{
+	int i;
+	mvprintw(40,40,"%s",printChar(10));
+	for(i = 0;i<40;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(11));
+		
+		//LIGNE 1
+		mvprintw(41,40,"%s",printChar(14));
+		printw("               Game Over                ");
+		mvprintw(41,81,"%s",printChar(14));
+		//LIGNE 2
+		mvprintw(42,40,"%s",printChar(14));
+		printw("                                        ");
+		mvprintw(42,81,"%s",printChar(14));
+		if(score>bestScore)
+		{
+			mvprintw(43,40,"%s",printChar(14));
+			printw("        NOUVEAU MEILLEUR SCORE !!!       ");
+			mvprintw(43,81,"%s",printChar(14));
+			mvprintw(44,40,"%s",printChar(14));
+			printw("                   %d                    ",score);
+			mvprintw(44,81,"%s",printChar(14));
+			
+			mvprintw(45,40,"%s",printChar(14));
+			printw("                                         ");
+			mvprintw(45,81,"%s",printChar(14));
+		
+			mvprintw(46,40,"%s",printChar(14));
+			printw("Appuyez sur 'n' pour relancer une partie");
+			mvprintw(46,81,"%s",printChar(14));
+			//LIGNE 4
+			mvprintw(47,40,"%s",printChar(14));
+			printw("                                        ");
+			mvprintw(47,81,"%s",printChar(14));
+			//LIGNE 5
+			mvprintw(48,40,"%s",printChar(14));
+			printw("Appuyez sur 'm' pour revenir au menu    ");
+			mvprintw(48,81,"%s",printChar(14));
+			//LIGNE 6
+			mvprintw(49,40,"%s",printChar(15));
+		}
+		else
+		{
+			//LIGN3 3
+			mvprintw(43,40,"%s",printChar(14));
+			printw("Appuyez sur 'n' pour relancer une partie");
+			mvprintw(43,81,"%s",printChar(14));
+			//LIGNE 4
+			mvprintw(44,40,"%s",printChar(14));
+			printw("                                        ");
+			mvprintw(44,81,"%s",printChar(14));
+			//LIGNE 5
+			mvprintw(45,40,"%s",printChar(14));
+			printw("Appuyez sur 'm' pour revenir au menu    ");
+			mvprintw(45,81,"%s",printChar(14));
+			//LIGNE 6
+			mvprintw(46,40,"%s",printChar(15));
+		}
+		for(i = 0;i<40;i++)
+		{
+			printw("%s",printChar(29));
+		}
+		printw("%s",printChar(16));
+	
 }

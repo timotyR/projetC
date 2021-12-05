@@ -2,58 +2,105 @@
 
 int main(void)
 {
+	//INIT NCURSES
 	setlocale(LC_ALL, "");
 	initscr();cbreak();noecho(),nodelay(stdscr,TRUE);
 	curs_set(0);
-	char c;
+	start_color();
+	srand(time(NULL));
 	
-	int timing		= 0;
-	int timing2		= 0;
+	//INITIALISATION COULEURS
+	init_pair(1,COLOR_GREEN,COLOR_BLACK);
+	init_pair(2,COLOR_BLUE,COLOR_BLACK);
+	init_pair(3,COLOR_RED,COLOR_BLACK);
+	init_pair(4,COLOR_YELLOW,COLOR_BLACK);
+	init_pair(5,COLOR_CYAN,COLOR_BLACK);
+	init_pair(6,COLOR_MAGENTA,COLOR_BLACK);
+	
+	//DEFINITION DES VARIABLES
+	char c;
+	int timing			= 0;
+	int timingEnnemis	= 0;
+	int timingMissiles	= 0;
+	int i				= 0;
+	char dirEnnemis		= 'E';
+	int score			= 0;
+	int choixMode		= 3;
+	FILE* fic;
+	char* ficScore	= "score.txt";
+	int bestScore;
+	fic=fopen(ficScore,"r");
+	fscanf(fic,"%d",&bestScore);
+	fclose(fic);
+	
 	int vitesse		= 5000;
-	int i			= 0;
 	int nbMissile	= 25;
+	int nbMissileE;
 	int nbEtoile	= 55;
-	char dirEnnemis	= 'E';
-	JOUEUR j1= init_joueur();
-	// ENNEMI e1= init_ennemi('S',"vaisseauB2.txt",10,10,18,6);
-	// ENNEMI e2= init_ennemi('S',"vaisseauB.txt",10,15,18,6);
-	// ENNEMI e3= init_ennemi('S',"vaisseauB2.txt",10,20,18,6);
-	// ENNEMI e3= init_ennemi('S',"vaisseauE.txt",1,2,21,7);
-	Ptliste ennemisList=initEnnemiList1();
-	MISSILE* tabM =tabMissile(nbMissile,j1);
-	ETOILE* tabEt =tabEtoile(nbEtoile);
+	if(choixMode==2)
+	{
+		nbMissileE=10;
+		vitesse=vitesse*0.90;
+	}
+	else
+		nbMissileE=5;
+	
+	
+	
+	
+	VAISSEAU j1			= init_joueur();
+	Ptliste ennemisList	= initEnnemiList1();
+	Ptliste ennemisList2;
+	MISSILE* tabM 		= tabMissile(nbMissile,j1);
+	MISSILE* tabMEnnemi	= tabMissile(nbMissile,ennemisList->contenu);
+	ETOILE* tabEt 		= tabEtoile(nbEtoile);
+	
 	affichage_Etoile(tabEt,nbEtoile);
 	printSkinCurse(j1.skin,j1.length,j1.posx,j1.posy,j1.largeur);
-	// printSkinCurse(e3.skin,e3.length,e3.posx,e3.posy,e3.largeur);
 	move(LINES - 1, COLS - 1);
 	
 	
 	while((c=getch())!=27)
 	{
-		
-		if((c=='s'/*||c==KEY_DOWN*/)&&j1.posx<37)
-		{
-			j1.posx++;
-		}
-		if((c=='z'/*||c==KEY_UP*/)&&j1.posx>1)
-		{
-			j1.posx--;
-		}
+		//DIRECTION DROITE
 		if((c=='q'/*||c==KEY_LEFT*/)&&j1.posy>1)
 		{
 			j1.posy--;
 		}
-		if((c=='d'/*||c==KEY_RIGHT*/)&&j1.posy<60)
+		//DIRECTION GAUCHE
+		if((c=='d'/*||c==KEY_RIGHT*/)&&j1.posy<120)
 		{
 			j1.posy++;
 		}
-		
+		//RESTART
+		if(c=='n'&&(j1.blindage<=0||ennemisList==NULL))
+		{
+			fic=fopen(ficScore,"w+");
+			if(fic != NULL)
+			{
+				
+				if(score>bestScore)
+				{
+					fprintf(fic,"%d",score);
+					bestScore=score;
+				}
+			}
+			fclose(fic);
+			score = 0;
+			
+			j1= init_joueur();
+			ennemisList2=initEnnemiList1();
+			ennemisList2=initEnnemiList1();
+			ennemisList=ennemisList2;
+			tabMEnnemi=tabMissile(nbMissile,ennemisList->contenu);
+			
+		}
 		
 		
 		
 		
 		//TIR DE MISSILE
-		if(c=='p'&&tabM[i].etat!='V')
+		if(c=='p'&&tabM[i].etat!='V'&&j1.blindage>0)
 		{
 			tabM[i]=init_missile('N',j1.posx-1-1,(j1.largeur/2)+j1.posy-2,'V');
 			if(i<=nbMissile-2)
@@ -62,50 +109,72 @@ int main(void)
 				i=0;
 		}
 		
-		timing=(timing+1)%vitesse;
+		
 		
 		//AFFICHAGE//
-		if(timing==100)
+		
+		timing=(timing+1)%vitesse;
+		if(timing==100&&ennemisList!=NULL)
+			
 		{
-			timing2=(timing2+1)%3;
-		if(timing2==2)
+			timingEnnemis=(timingEnnemis+1)%3;
+			if(timingEnnemis==2 && ennemisList!=NULL)
 			{
 				dirEnnemis = deplacementEnnemis(ennemisList,dirEnnemis);
 			}
-			
+			timingMissiles=(timingMissiles+1)%21;
+			//TIR MISSILE ENNEMIS
+			if(timingMissiles==20&&ennemisList->contenu.posx>7)
+				tabMEnnemi=missile_ennemi(ennemisList,tabMEnnemi,nbMissileE);
 			
 			erase();
-			// mvprintw(LINES - 3, COLS - 10, "%d",timing2);
-		//AFFICHAGE ETOILE
+			
+			
 		
+		
+		//AFFICHAGE ETOILES
 			for(int j=0;j<nbEtoile;j++)
 			{
 				tabEt[j].posx++;
-				mvprintw(tabEt[j].posx,tabEt[j].posy,"*");
+				mvprintw(tabEt[j].posx,tabEt[j].posy,tabEt[j].skin);
 			
-				if(tabEt[j].posx>=60)
+				if(tabEt[j].posx>=80)
 				{
 					tabEt[j].posx = 1;
-					tabEt[j].posy = 1+(rand()%59);
+					tabEt[j].posy = 1+(rand()%120);
 				}
 			}
 		
 		//AFFICHAGE JOUEUR
-			printSkinCurse(j1.skin,j1.length,j1.posx,j1.posy,j1.largeur);
+			attron(COLOR_PAIR(5));
+			if(j1.etat=='V')
+				printSkinCurse(j1.skin,j1.length,j1.posx,j1.posy,j1.largeur);
+			if(j1.etat=='E'&&j1.blindage>1)
+				printSkinCurse(j1.skin2,j1.length,j1.posx,j1.posy,j1.largeur);
+			else if(j1.etat=='E'&&j1.blindage==1)
+				printSkinCurse(j1.skin3,j1.length,j1.posx,j1.posy,j1.largeur);
+			attroff(COLOR_PAIR(5));
+			
 		//AFFICHAGE ENNEMIS
-			printList(ennemisList);
+			if(ennemisList!=NULL)
+				printList(ennemisList);
 			
 		//AFFICHAGE MISSILES
-		
 			for(int j=0;j<nbMissile;j++)
 			{
 				if(tabM[j].etat=='V')
 				{
 					tabM[j].posx--;
+					attron(COLOR_PAIR(5));
 					mvprintw(tabM[j].posx,tabM[j].posy,"%s",tabM[j].skin);
-				
-					ennemisList=damage(ennemisList,&tabM[j]);
+					attroff(COLOR_PAIR(5));
 					
+					if(ennemisList!=NULL)
+					{
+						ennemisList=damage(ennemisList,&tabM[j],&score);
+						
+					}
+						
 					if(tabM[j].posx==0)
 					{
 						tabM[j].etat='I';
@@ -113,11 +182,58 @@ int main(void)
 					}
 				}
 			}
+			//MISSILES ENNEMIS
+			for(int j=0;j<nbMissileE;j++)
+			{
+				if(tabMEnnemi[j].etat=='V')
+				{
+					tabMEnnemi[j].posx++;
+					attron(COLOR_PAIR(3));
+					mvprintw(tabMEnnemi[j].posx,tabMEnnemi[j].posy,"%s",tabMEnnemi[j].skin);
+					attroff(COLOR_PAIR(3));
+					
+					if(collisionMissile(tabMEnnemi[j],tabM,nbMissile)==1)
+					{
+						tabMEnnemi[j].etat='I';
+						score+=5;
+					}
+					if(hitBox(j1,tabMEnnemi[j])==1&&j1.blindage>0)
+					{
+						j1.blindage--;
+						j1.etat='E';
+						tabMEnnemi[j].etat='I';
+					}
+					if(j1.blindage==0)
+					{
+						j1.etat='D';
+					}
+						
+					if(tabMEnnemi[j].posx>=80)
+					{
+						tabMEnnemi[j].etat='I';
+						mvprintw(tabMEnnemi[j].posx,tabMEnnemi[j].posy," ");
+					}
+				}
+			}
+			//AFFICHAGE ENTETE
+			attron(COLOR_PAIR(1));
+			affichage_score(choixMode,score,j1.blindage,bestScore);
+			if(((j1.blindage<=0||ennemisList==NULL)&&(choixMode==1||choixMode==2))||(j1.blindage<=0&&choixMode==3))
+				affich_GameOver(bestScore,score);
+			attroff(COLOR_PAIR(1));
+			
 			move(LINES - 1, COLS - 1);
 		}
-		
-		
-		
+		//SI MODE PROGRESSIF
+		if(timing==100&&ennemisList==NULL&&choixMode==3)
+		{
+			ennemisList2=initEnnemiList1();
+			ennemisList2=initEnnemiList1();
+			ennemisList=ennemisList2;
+			tabMEnnemi=tabMissile(nbMissile,ennemisList->contenu);
+			vitesse=vitesse*0.95;
+			nbMissileE+=4;
+		}
 		
 	}
 	
