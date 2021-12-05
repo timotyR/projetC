@@ -33,7 +33,7 @@ int main(void)
 	fscanf(fic,"%d",&bestScore);
 	fclose(fic);
 	
-	int vitesse		= 5000;
+	int vitesse		= 35000;
 	int nbMissile	= 25;
 	int nbMissileE;
 	int nbEtoile	= 55;
@@ -60,32 +60,28 @@ int main(void)
 	move(LINES - 1, COLS - 1);
 	
 	
-	while((c=getch())!=27)
+	while((c=getch()))
 	{
 		//DIRECTION DROITE
-		if((c=='q'/*||c==KEY_LEFT*/)&&j1.posy>1)
+		if((c=='q'||c==KEY_LEFT)&&j1.posy>1)
 		{
 			j1.posy--;
 		}
 		//DIRECTION GAUCHE
-		if((c=='d'/*||c==KEY_RIGHT*/)&&j1.posy<120)
+		if((c=='d'||c==KEY_RIGHT)&&j1.posy<120)
 		{
 			j1.posy++;
 		}
 		//RESTART
 		if(c=='n'&&(j1.blindage<=0||ennemisList==NULL))
 		{
-			fic=fopen(ficScore,"w+");
-			if(fic != NULL)
+			if(score>bestScore)
 			{
-				
-				if(score>bestScore)
-				{
-					fprintf(fic,"%d",score);
-					bestScore=score;
-				}
+				fic=fopen(ficScore,"w+");
+				fprintf(fic,"%d",score);
+				bestScore=score;
+				fclose(fic);
 			}
-			fclose(fic);
 			score = 0;
 			
 			j1= init_joueur();
